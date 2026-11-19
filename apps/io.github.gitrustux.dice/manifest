@@ -1,0 +1,11 @@
+Id: io.github.gitrustux.dice
+Name: Dice
+Summary: roll one to five dice
+Exec: bin/app
+Icon: icon.png
+Categories: Game Utility
+Screenshots: screenshot.png
+Platform: 1
+Developer: io.github.gitrustux
+Developer-Name: The Rustux Authors
+Source: https://github.com/gitrustux/foxden-apps/tree/main/apps/io.github.gitrustux.dice

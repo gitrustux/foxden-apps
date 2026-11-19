@@ -1,0 +1,79 @@
+# main: each app whose version has no release yet is built from its
+# source and released as ID-VERSION, with the package and a build
+# provenance attestation (who built it, from which commit). rustux.com's
+# publishing fetches the releases, checks them (rustux
+# scripts/fetch-outside-apps.sh) and signs them into the apps repository
+# with the store's key, which never comes near GitHub.
+#
+# Two jobs: "build" runs the apps' code (their build) with a read-only
+# token; "release" has the rights to write releases and attestations and
+# runs nothing of the apps'.
+name: publish
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: publish
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    outputs:
+      built: ${{ steps.build.outputs.built }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust 1.91 with rust-src
+        run: |
+          rustup toolchain install 1.91.0 --profile minimal --component rust-src
+          rustup default 1.91.0
+      - name: rustux (ci/rustux-commit)
+        run: ci/get-rustux.sh
+      - name: rpg for the checks
+        run: |
+          (cd rustux/userspace/rust/rpg && cargo build -q --release --target x86_64-unknown-linux-gnu --target-dir "$PWD/../../build/rpg-host")
+          echo "RPG=$PWD/rustux/userspace/build/rpg-host/x86_64-unknown-linux-gnu/release/rpg" >> "$GITHUB_ENV"
+      - name: Checks (everything)
+        run: python3 ci/check.py --rpg "$RPG"
+      - name: Build the apps not released yet
+        id: build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          apps=$(ci/which-apps.sh unreleased | tr '\n' ' ')
+          echo "to build: ${apps:-none}"
+          ci/build.sh out $apps
+          echo "built=$(ls out/*.rpg 2>/dev/null | wc -l)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        if: steps.build.outputs.built != '0'
+        with:
+          name: packages
+          path: out/*.rpg
+  release:
+    needs: build
+    if: needs.build.outputs.built != '0'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: out
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: out/*.rpg
+      - name: Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for f in out/*.rpg; do
+            b=$(basename "$f" _x86_64.rpg)
+            id=${b%%_*} v=${b#*_}
+            gh release create "$id-$v" "$f" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --title "$id $v" --notes "Built from $GITHUB_SHA by the publish workflow. SHA-256: $(sha256sum "$f" | cut -d' ' -f1)"
+          done

@@ -1,0 +1,4 @@
+rustux/
+out/
+*.rpg
+*.key

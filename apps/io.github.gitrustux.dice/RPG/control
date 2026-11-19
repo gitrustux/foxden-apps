@@ -1,0 +1,10 @@
+Package: io.github.gitrustux.dice
+Version: 1.0.0
+Architecture: x86_64
+Kind: app
+Maintainer: The Rustux Authors <gitrustux@rustux>
+Homepage: https://github.com/gitrustux/foxden-apps
+License: MIT
+Description: Dice
+ Roll one to five dice. The example app of the foxden-apps repository,
+ where outside developers submit their apps for FoxDen.

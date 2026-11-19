@@ -1,0 +1,36 @@
+# Every pull request: the checks (ci/check.py: layout, manifest, licence,
+# the developer's signature, who may change what, versions going up), then
+# the changed apps built from their source; the packages are kept as the
+# run's artifact for the reviewer. Runs with a read-only token and no
+# secrets: a pull request's code never sees anything to steal.
+name: check
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Rust 1.91 with rust-src
+        run: |
+          rustup toolchain install 1.91.0 --profile minimal --component rust-src
+          rustup default 1.91.0
+      - name: rustux (ci/rustux-commit)
+        run: ci/get-rustux.sh
+      - name: rpg for the checks
+        run: |
+          (cd rustux/userspace/rust/rpg && cargo build -q --release --target x86_64-unknown-linux-gnu --target-dir "$PWD/../../build/rpg-host")
+          echo "RPG=$PWD/rustux/userspace/build/rpg-host/x86_64-unknown-linux-gnu/release/rpg" >> "$GITHUB_ENV"
+      - name: Checks
+        run: python3 ci/check.py --base "origin/${{ github.base_ref }}" --author "${{ github.event.pull_request.user.login }}" --rpg "$RPG"
+      - name: Build the changed apps
+        run: ci/build.sh out $(ci/which-apps.sh changed "origin/${{ github.base_ref }}")
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: out/*.rpg
+          if-no-files-found: ignore
