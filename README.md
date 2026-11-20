@@ -154,6 +154,27 @@ ci/get-rustux.sh
 ci/build.sh out io.github.alice.notes
 ```
 
+## Trying your app before submitting it
+
+On Rustica you can run your app from its folder without installing it,
+in the same sandbox it gets when installed (developer mode). Put the
+program at `bin/app` beside the manifest, then run the command below.
+The folder `ci/build.sh` packs on Linux,
+`rustux/userspace/build/outside/ID.pkg`, is one, so you can copy it
+over.
+
+```sh
+appctl run --dir ~/src/notes/build
+```
+
+No password is needed, because nothing is installed. You can also hand a
+package file to others (`rpg build DIR`). They can install it with `rpg
+install ./FILE.rpg` or by opening it in Files. Rustica shows such an app
+as **not from FoxDen**, because nobody has checked it. By default,
+installing a package file needs an administrator; one can let everyone do
+it in Settings > Apps. An app installed from FoxDen is never replaced by
+a package file.
+
 ## What the checks look at
 
 - The folder's layout: only the files above, no links, pictures up to
