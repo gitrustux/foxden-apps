@@ -67,7 +67,7 @@ change is confirmed by a maintainer.
 
 ```
 manifest          what Rustica needs to know (below)
-RPG/control       the package: version, licence, description
+RPG/control       the package: version, license, description
 icon.png          optional, 64x64 or larger
 screenshot.png    optional, any number (listed in the manifest)
 src/main.rs       your program, Rust; more modules in src/
@@ -93,8 +93,9 @@ Source: https://github.com/gitrustux/foxden-apps/tree/main/apps/io.github.alice.
 
 `Exec` is always `bin/app`, the program built from `src/`. `Permissions`
 lists what the app needs beyond its own folders and a window. The options
-are `network`, `files:documents`, `files:pictures`, `files:music`,
-`files:videos`, `files:downloads`, `files:home` and `removable`. Ask for as
+are `network`, `audio` (playing sound), `files:documents`,
+`files:pictures`, `files:music`, `files:videos`, `files:downloads`,
+`files:home` and `removable`. Ask for as
 little as you can: without a `files:` permission, your app can still open
 and save the files the user picks, through the file chooser
 (`<rustux/portal.h>`).
@@ -181,7 +182,7 @@ a package file.
   2 MiB, up to 1 MiB of source.
 - The manifest and control file: the ID matches the folder and sits under
   your developer ID. `Exec`, `Source`, `Platform`, the permissions and the
-  licence are checked too.
+  license are checked too.
 - The source rules above.
 - Your signature, by the key in your developer folder.
 - In a pull request:
@@ -197,8 +198,8 @@ a package file.
 
 Open an issue. Maintainers are listed in `MAINTAINERS`.
 
-## Licence
+## License
 
 This repository's own files (`ci/`, `.github/`, `sign.sh`, this README)
-are under the MIT licence (`LICENSE`). Each app is under the licence its
+are under the MIT license (`LICENSE`). Each app is under the license its
 `RPG/control` names.

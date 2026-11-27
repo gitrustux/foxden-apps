@@ -1,4 +1,4 @@
-# Every pull request: the checks (ci/check.py: layout, manifest, licence,
+# Every pull request: the checks (ci/check.py: layout, manifest, license,
 # the developer's signature, who may change what, versions going up), then
 # the changed apps built from their source; the packages are kept as the
 # run's artifact for the reviewer. Runs with a read-only token and no
